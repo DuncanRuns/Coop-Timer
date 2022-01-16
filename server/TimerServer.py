@@ -130,7 +130,7 @@ class TimerServer:
                     print("[Timer Server] Client '"+str(addr)+"' connected.")
                     self.updateClient(client)
             except:
-                print("[Timer Server] Exception in acceptConnectionsLoop:\n\n"+traceback.format_exc())
+                pass#print("[Timer Server] Exception in acceptConnectionsLoop:\n\n"+traceback.format_exc())
 
     def setTime(self, x):
         self.pauseTime = x
