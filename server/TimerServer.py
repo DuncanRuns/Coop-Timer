@@ -4,6 +4,7 @@ from threading import Thread
 import time
 import socket
 import re
+import traceback
 
 
 class TimerClientInstance:
@@ -65,16 +66,19 @@ class TimerServer:
 
     def start(self):
         if not self.running:
+            print("[Timer Server] Starting...")
             self.running = True
 
             self.socket.bind((self.addr, self.port))
             self.socket.listen(50)
 
+            print("[Timer Server] Setting socket opt...")
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
             self.acceptConnectionsThread = Thread(
                 target=self.acceptConnectionsLoop)
             self.acceptConnectionsThread.start()
+            print("[Timer Server] Started!")
 
     def togglePause(self):
         if self.timerStatus == "running":
@@ -124,7 +128,7 @@ class TimerServer:
                     print("[Timer Server] Client '"+str(addr)+"' connected.")
                     self.updateClient(client)
             except:
-                pass
+                print("[Timer Server] Exception in acceptConnectionsLoop:\n\n"+traceback.format_exc())
 
     def setTime(self, x):
         self.pauseTime = x
@@ -160,6 +164,11 @@ class LineChecker:
     def check(self, string: str):
         if self.message in string:
             self.func()
+            return True
+        return False
+
+    def getMessage(self):
+        return self.message
 
 
 class RELineChecker(LineChecker):
@@ -170,6 +179,11 @@ class RELineChecker(LineChecker):
     def check(self, string: str):
         if self.pattern.match(string):
             self.func()
+            return True
+        return False
+
+    def getMessage(self):
+        return str(self.pattern)
 
 
 class LogsTracker:
@@ -200,7 +214,7 @@ class LogsTracker:
                         self.lastMTime = mTime
                         self._checkFile()
             except:
-                pass
+                traceback.print_exc()
 
     def _checkFile(self):
         with open(self.path, "r") as logsFile:
@@ -211,9 +225,10 @@ class LogsTracker:
             self.lastLine = 0
 
         for line in content[self.lastLine:]:
-            print(line)
             for lineChecker in self.lineCheckers:
-                lineChecker.check(line)
+                if lineChecker.check(line):
+                    print("[Timer Server] Detected \"" +
+                          lineChecker.message+"\"")
         self.lastLine = len(content)
 
 
@@ -238,6 +253,8 @@ if __name__ == "__main__":
 
     while input() != "stop":
         pass
+
+    print("Ending...")
 
     lt.stop()
     ts.kill()
