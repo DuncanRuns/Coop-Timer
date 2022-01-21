@@ -32,9 +32,9 @@ class TimerClientInstance:
                         self.parent.resetTimer()
         except:
             pass
-        self.detachFromClient()
+        self.detachFromServer()
 
-    def detachFromClient(self):
+    def detachFromServer(self):
         if self.parent is not None:
             self.parent.removeClient(self)
             self.parent = None
@@ -49,7 +49,7 @@ class TimerClientInstance:
             self.clientSocket.close()
         except:
             pass
-        self.detachFromClient()
+        self.detachFromServer()
 
 
 class TimerServer:
